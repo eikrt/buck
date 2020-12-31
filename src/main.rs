@@ -3,7 +3,6 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
-use sdl2::pixels;
 use std::time::Duration;
 
 // "technical" constants
@@ -27,12 +26,11 @@ struct Player {
 fn render(canvas: &mut WindowCanvas, player: &mut Player) {
 
     // per render things
-    let bg_color = Color::RGB(119, 136, 153);
-    let wallcolor = Color::RGB(50,150,50);
+    let bg_color = Color::RGB(128, 128, 138);
+    let tile_color = Color::RGB(128,128,128);
+    let player_color = Color::RGB(0,0,0);
     canvas.set_draw_color(bg_color);
     canvas.clear();
-    canvas.set_draw_color(wallcolor);
-    canvas.present();
     let mut map:[[i32;MAP_SIZE];MAP_SIZE] = [[1;MAP_SIZE];MAP_SIZE];
     map[1][1] = 1;
     map[1][2] = 0;
@@ -47,11 +45,18 @@ fn render(canvas: &mut WindowCanvas, player: &mut Player) {
     map[5][7] = 0;
     map[6][7] = 0;
     map[5][7] = 0;
-    canvas.set_draw_color(Color::RGB(0, 0, 0)); 
+    
+    for y in 0..MAP_SIZE {
+	for x in 0..MAP_SIZE {
+	    // render tile
+	    canvas.set_draw_color(tile_color);
+	    canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32, x as i32 * TILE_SIZE as i32, TILE_SIZE as u32, TILE_SIZE as u32));
+	}
+    }
+    // render player
+    canvas.set_draw_color(player_color);
     canvas.fill_rect(Rect::new(player.x as i32, player.y as i32, 32,32));	
-    // render raycast
     canvas.present();
-
 }
 
 
