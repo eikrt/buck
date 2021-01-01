@@ -1,0 +1,6 @@
+struct Player {
+    x: f32,
+    y: f32,
+    speed_movement: f32,
+    speed_rotation: f32,
+}

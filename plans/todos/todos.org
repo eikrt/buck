@@ -1,0 +1,17 @@
+* TODOS BUCK
+
+
+  
+** TODO CLI menu and ui
+** TODO crosshair and shooting
+** TODO map file structure
+** TODO DEMO
+** TODO core places where the captain will be 
+** TODO
+** TODO
+** TODO
+** TODO
+** TODO
+** TODO
+** TODO
+** TODO

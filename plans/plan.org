@@ -1,0 +1,77 @@
+* THE GRAND PLAN
+
+** Summary
+
+   This will be a large project and a demo version of it will be available at 27. February
+   This is a game and the goal is to create something that entertains the player for hours.
+
+   Genre: roguelike
+   Theme: dieselpunk/scifi
+   
+   
+   
+** The Game
+
+   The game draws inspiration from FTL, Binding of Isaac, Hotline Miami and Star Trek. Player controls a ship that descends to underground.
+   Player encounters
+
+   * Encounter "stories" where you must make decisions. Decisions give you items and alter "karma".
+   * Shops, etc
+   * And finally the core of the game: boarding parties.
+
+   The protagonist of the game is the captain of the ship. The captain will engage in short combats with bad guys where
+   sharp reflexes are needed. Boarding encounters are made of:
+
+   * combating creatures with *throws*, *bullets* and *brute force*. If the player runs out of ammo or fails to destroy the creatures,
+     he can return to the ship.
+   * exciting dialogue and decisions
+   * bosses
+
+   The hostility of the environment depends on player decisions. The "karma" will be an alignment of some sort and will provide exciting things to the player.
+
+** Combat
+   In the start, player has
+   3 hp
+   double barreled shotgun
+   brass fist
+   
+   Combat will be more of a puzzle than an violent shootout. Different creatures need a different treatment.
+** Map
+      /
+     o   p
+    / \ /
+   c   o
+    \ / \
+     o   o
+      \ /
+       n
+
+ etc.
+where c is captain, p is politeia controlled region and n is nihil controlled
+ 
+ 
+** Factions
+
+   2 factions:
+
+   moralist organized platonists vs freudian technocrat nihilists
+   both with interesting philosophical approaches and interesting backgrounds
+
+   Politeia vs Nihil
+   
+   
+   
+** Creatures
+
+   * Rock slime
+   
+   invulnerable, must be thrown into a pit
+
+   * Insect
+
+   vulnerable, runs at captain and does 1 damage
+
+   * Ancient robot
+
+   shoots, must be shot
+   

@@ -4,26 +4,20 @@ use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use std::time::Duration;
-
+use player::Player;
+mod player;
 // "technical" constants
 
 const SCREEN_HEIGHT: u32 = 600;
 const SCREEN_WIDTH: u32 = 800;
 const TILE_SIZE: f32 = 64.0;
 const MAP_SIZE: usize = 32;
-
 // gameplay constants
 const PLAYER_SPEED: f32 = 4.0;
-struct Player {
-    x: f32,
-    y: f32,
-    speed_movement: f32,
-    speed_rotation: f32,
-}
 // controls
 
 
-fn render(canvas: &mut WindowCanvas, player: &mut Player) {
+fn render(canvas: &mut WindowCanvas, player: &mut player::Player) {
 
     // per render things
     let bg_color = Color::RGB(128, 128, 138);
@@ -72,7 +66,7 @@ fn main_loop() -> Result<(), String> {
         .expect("could not make a canvas");
     //initialising gameplay things
 
-    let mut player = Player {
+    let mut player = player::Player {
 	
 	x: 2.0,
 	y: 2.0,

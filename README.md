@@ -1,1 +1,3 @@
-# Buck
+# Descend
+
+# more info in plans directory
