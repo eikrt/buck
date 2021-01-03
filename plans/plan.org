@@ -36,6 +36,17 @@
    brass fist
    
    Combat will be more of a puzzle than an violent shootout. Different creatures need a different treatment.
+   Divided into 2 major scenarios:
+
+   * ATTACK
+
+     player attacks to place full of creatures, traps and loot
+     
+   * DEFENSE
+
+     players ship is attacked and he must defend. players crew defends himself and this is when traps and other defence mechanisms play their roles
+     
+     
 ** Map
       /
      o   p
