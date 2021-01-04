@@ -5,16 +5,12 @@ use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use std::time::Duration;
 use std::thread;
-use std::io;
-use world::Player;
 mod world;
 mod mapgenerator;
 mod ui;
-
 // "technical" constants
 const SCREEN_HEIGHT: u32 = 600;
 const SCREEN_WIDTH: u32 = 800;
-
 const SCROLL_BOUNDARY_Y: f32 = 128.0;
 const SCROLL_BOUNDARY_X: f32 = 256.0;
 const TILE_SIZE: f32 = 32.0;
@@ -28,7 +24,9 @@ fn render(canvas: &mut WindowCanvas, player: &mut world::Player, map: &mut world
 
     // per render things
     let bg_color = Color::RGB(0, 0, 0);
+    
     let tile_color = Color::RGB(128,64,55);
+    let floor_color = Color::RGB(64,32,30);
     let player_color = Color::RGB(128,128,0);
     canvas.set_draw_color(bg_color);
     canvas.clear();
@@ -37,13 +35,19 @@ fn render(canvas: &mut WindowCanvas, player: &mut world::Player, map: &mut world
     for y in 0..map.map_size {
 	for x in 0..map.map_size {
 	    // render tile
-	    if map.content[y as usize][x as usize] == 0 {
+	    if map.content[y as usize][x as usize] == 1 {
 		canvas.set_draw_color(tile_color);
 		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
 	    }
 	    
-	    if map.content[y as usize][x as usize] == 1 {
+	    if map.content[y as usize][x as usize] == 0 {
 		canvas.set_draw_color(bg_color);
+		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
+
+	    }
+	    
+	    if map.content[y as usize][x as usize] == 2 {
+		canvas.set_draw_color(floor_color);
 		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
 	    }
 	}
@@ -71,6 +75,7 @@ fn main_loop() -> Result<(), String> {
 	
 	x: 400.0,
 	y: 300.0,
+	speed: 4.0,
 	speed_movement: 0.1,
 	speed_rotation:0.1,
 
@@ -80,7 +85,30 @@ fn main_loop() -> Result<(), String> {
 	x: 0.0,
 	y: 0.0
     };
-
+    let mut game_state = "neutral"; // neutral, board
+    let mut worldmap = world::WorldMap {
+	content: [
+	    
+	    [0,0, 0,0, 0,0, 0,1, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0],
+	    [0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0]
+	],
+	    ship_x: 7,
+	    ship_y: 0,
+    };
     let mut map = mapgenerator::get_generated_level(0);
 
     let mut w = false;
@@ -90,14 +118,25 @@ fn main_loop() -> Result<(), String> {
 
     // ui (command line ui is in its separate thread)
     
-    thread::spawn(|| {
+    thread::spawn(move || {
+
+	    ui::draw_ui(game_state);
 	loop {
 
 	    
-	    ui::draw_ui();
 	    let mut line = String::new();
+	    
 	    let input = std::io::stdin().read_line(&mut line).unwrap();
-	    thread::sleep(Duration::from_millis(100));
+
+	    if line.trim() == "descend" {
+		ui::draw_descend(&mut worldmap);
+	    }
+	    else {
+
+		
+	    }
+	    
+		//ui::draw_ui(game_state);
 	}
     }
     );
@@ -161,7 +200,7 @@ fn main_loop() -> Result<(), String> {
         }
 
 	if w == true {
-	    if map.content[((player.y - PLAYER_SPEED) % TILE_SIZE).floor() as usize ][((player.y - PLAYER_SPEED) % TILE_SIZE).floor() as usize] == 0 {
+	    if map.content[((player.y - PLAYER_SPEED) / TILE_SIZE) as usize][((player.x) / TILE_SIZE) as usize] != 1 {
 		player.y -= PLAYER_SPEED;
 	    }
 	    if player.y < camera.y + SCROLL_BOUNDARY_Y {
@@ -171,8 +210,10 @@ fn main_loop() -> Result<(), String> {
 	
 	if a == true {
 
-	    player.x -= PLAYER_SPEED;
 	    
+	    if map.content[((player.y) / TILE_SIZE) as usize][((player.x - PLAYER_SPEED) / TILE_SIZE) as usize] != 1 {
+		player.x -= PLAYER_SPEED;
+	    }
 	    if player.x < camera.x + SCROLL_BOUNDARY_X {
 		camera.x -= PLAYER_SPEED;
 	    }
@@ -180,8 +221,10 @@ fn main_loop() -> Result<(), String> {
 	
 	if s == true {
 
-	    player.y += PLAYER_SPEED;
 	    
+	    if map.content[((player.y + PLAYER_SPEED*4.0) / TILE_SIZE) as usize][((player.x) / TILE_SIZE) as usize] != 1 {
+		player.y += PLAYER_SPEED;
+	    }
 	    if player.y > camera.y + SCREEN_HEIGHT as f32 - SCROLL_BOUNDARY_Y {
 		camera.y += PLAYER_SPEED;
 	    }
@@ -189,7 +232,9 @@ fn main_loop() -> Result<(), String> {
 	
 	if d == true {
 
-	    player.x += PLAYER_SPEED;
+	    if map.content[((player.y) / TILE_SIZE) as usize][((player.x + PLAYER_SPEED*4.0) / TILE_SIZE) as usize] != 1 {
+		player.x += PLAYER_SPEED;
+	    }
 	    
 	    if player.x > camera.x + SCREEN_WIDTH as f32 - SCROLL_BOUNDARY_X {
 		camera.x += PLAYER_SPEED;

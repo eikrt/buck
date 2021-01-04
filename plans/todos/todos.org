@@ -1,16 +1,16 @@
-* TODOS BUCK
+* TODOS DESCEND
 
 
   
-** TODO CLI menu and ui
+** DONE CLI menu and ui
 ** TODO crosshair and shooting
 ** TODO map file structure
 ** DONE core places where the captain will be 
 ** TODO DEMO
 ** TODO better maps
 ** TODO map editor
-** TODO
-** TODO
+** DONE collision detection with tiles
+** TODO descend mechanic 
 ** TODO
 ** TODO
 ** TODO
