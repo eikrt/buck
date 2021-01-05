@@ -23,8 +23,7 @@ pub struct WorldMap {
 pub struct Drill {
     pub silver: i32,
     pub ammo: i32,
-    pub nitro: i32,
-	
+    pub 
     
     
 }

@@ -24,6 +24,7 @@ version = "0.1.0"
 dependencies = [
  "rand",
  "sdl2",
+ "toml",
 ]
 
 [[package]]
@@ -116,6 +117,21 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "version-compare",
+]
+
+[[package]]
+name = "serde"
+version = "1.0.118"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06c64263859d87aa2eb554587e2d23183398d617427327cf2b3d0ed8c69e4800"
+
+[[package]]
+name = "toml"
+version = "0.4.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "758664fc71a3a69038656bee8b6be6477d2a6c315a6b81f7081f591bffa4111f"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

@@ -5,6 +5,7 @@ use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use std::time::Duration;
 use std::thread;
+use rand::Rng;
 mod world;
 mod mapgenerator;
 mod ui;
@@ -32,23 +33,23 @@ fn render(canvas: &mut WindowCanvas, player: &mut world::Player, map: &mut world
     canvas.clear();
    
     
-    for y in 0..map.map_size {
-	for x in 0..map.map_size {
+    for x in 0..map.map_size {
+	for y in 0..map.map_size {
 	    // render tile
 	    if map.content[y as usize][x as usize] == 1 {
 		canvas.set_draw_color(tile_color);
-		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
+		canvas.fill_rect(Rect::new(x as i32 * TILE_SIZE as i32 - camera.x as i32, y as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
 	    }
 	    
 	    if map.content[y as usize][x as usize] == 0 {
 		canvas.set_draw_color(bg_color);
-		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
+		canvas.fill_rect(Rect::new(x as i32 * TILE_SIZE as i32 - camera.x as i32, y as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
 
 	    }
 	    
 	    if map.content[y as usize][x as usize] == 2 {
 		canvas.set_draw_color(floor_color);
-		canvas.fill_rect(Rect::new(y as i32 * TILE_SIZE as i32 - camera.x as i32, x as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
+		canvas.fill_rect(Rect::new(x as i32 * TILE_SIZE as i32 - camera.x as i32, y as i32 * TILE_SIZE as i32 - camera.y as i32, TILE_SIZE as u32, TILE_SIZE as u32));
 	    }
 	}
     }
@@ -80,12 +81,17 @@ fn main_loop() -> Result<(), String> {
 	speed_rotation:0.1,
 
     };
+    let mut drill = world::Drill {
+	silver: 0,
+	ammo: 4,
+	nitro: 1
 
+    };
     let mut camera = world::Camera {
 	x: 0.0,
 	y: 0.0
     };
-    let mut game_state = "neutral"; // neutral, board
+    let mut game_state = "neutral"; // neutral, board, intruder
     let mut worldmap = world::WorldMap {
 	content: [
 	    
@@ -115,32 +121,8 @@ fn main_loop() -> Result<(), String> {
     let mut a = false;
     let mut s = false;
     let mut d = false;
-
-    // ui (command line ui is in its separate thread)
+    let mut menu_on = false;
     
-    thread::spawn(move || {
-
-	    ui::draw_ui(game_state);
-	loop {
-
-	    
-	    let mut line = String::new();
-	    
-	    let input = std::io::stdin().read_line(&mut line).unwrap();
-
-	    if line.trim() == "descend" {
-		ui::draw_descend(&mut worldmap);
-	    }
-	    else {
-
-		
-	    }
-	    
-		//ui::draw_ui(game_state);
-	}
-    }
-    );
-
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
 	// event handling
@@ -194,6 +176,12 @@ fn main_loop() -> Result<(), String> {
 		    d = false;
 		}
 
+		Event::KeyUp{keycode: Some(Keycode::M), ..} => {
+		    
+		    
+		    menu_on = !menu_on;
+		}
+
 		
                 _ => {}
             }
@@ -240,6 +228,71 @@ fn main_loop() -> Result<(), String> {
 		camera.x += PLAYER_SPEED;
 	    }
 	}
+        
+    // ui (command line ui is in its separate thread)
+	while menu_on == true {
+	    ui::draw_ui(game_state);
+	    
+	    let mut line = String::new();
+	    
+	    let input = std::io::stdin().read_line(&mut line).unwrap();
+	    if line.trim() == "q" {
+		menu_on = false;
+	    }
+	    if line.trim() == "intruder" {
+		
+	    }
+	    if line.trim() == "board" {
+		map = mapgenerator::get_generated_level(1); // 0 for ship
+		player.x = 400.0;
+		player.y = 300.0;
+	    }
+	    if line.trim() == "descend" {
+		let scenario = ui::draw_descend(&mut worldmap);
+		if scenario.title.trim() == "loot" {
+		    let mut rng = rand::thread_rng();
+		    
+		    let silver = rng.gen_range(0..10);
+		    let ammo = rng.gen_range(0..4);
+		    let nitro = rng.gen_range(0..2);
+		    println!("You got {} amount of silver
+{} amount of ammo
+{} amount of nitro!", silver, ammo, nitro);
+		    
+		    drill.silver += silver;
+		    drill.ammo += ammo;
+		    drill.nitro += nitro;
+		    // loot logic comes here
+		}
+		else if scenario.title.trim() == "board" {
+		    
+		    println!("You prepare to board...");
+		    
+		    map = mapgenerator::get_generated_level(1); // 0 for ship
+		    player.x = 400.0;
+		    player.y = 300.0;
+		}
+		
+		else if scenario.title.trim() == "intruder" {
+		    println!("Intruder alert!");
+		}
+		else if scenario.title.trim() == "neutral" {
+		    
+		    println!("You continue drilling...");
+		}
+	    }
+	    else {
+		
+		
+	    }
+	}
+   
+		//ui::draw_ui(game_state);
+
+    
+
+
+    
 	// render
 	
         render(&mut canvas, &mut player, &mut map, &mut camera);

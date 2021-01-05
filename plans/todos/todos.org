@@ -8,10 +8,16 @@
 ** DONE core places where the captain will be 
 ** TODO DEMO
 ** TODO better maps
-** TODO map editor
 ** DONE collision detection with tiles
-** TODO descend mechanic 
+** DONE descend mechanic
+** TODO meaningful locations and their causes (loot, boarding, defense)
+** TODO enemies
+** TODO shop
+** TODO damage
+** TODO 
+** TODO 
 ** TODO
-** TODO
-** TODO
-** TODO
+** TODO 
+** TODO 
+** TODO 
+** TODO 

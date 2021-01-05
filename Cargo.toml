@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 sdl2 = "0.34.3"
 rand = "0.8.1"
+toml = "0.4.2"
