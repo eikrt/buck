@@ -21,7 +21,7 @@ const PLAYER_SPEED: f32 = 4.0;
 
 
 
-fn render(canvas: &mut WindowCanvas, player: &mut world::Player, map: &mut world::Level, camera: &mut world::Camera) {
+fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world::Level, camera: &mut world::Camera) {
 
     // per render things
     let bg_color = Color::RGB(0, 0, 0);
@@ -64,7 +64,7 @@ fn main_loop() -> Result<(), String> {
    //initialising windows and canvas 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-    let window = video_subsystem.window("Descend", SCREEN_WIDTH, SCREEN_HEIGHT)
+    let window = video_subsystem.window("Megaron", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .build()
         .expect("could not initialize video subsystem");
@@ -72,7 +72,7 @@ fn main_loop() -> Result<(), String> {
         .expect("could not make a canvas");
     //initialising gameplay things
 
-    let mut player = world::Player {
+    let mut player = world::Entity {
 	
 	x: 32.0,
 	y: 32.0,
@@ -116,7 +116,7 @@ fn main_loop() -> Result<(), String> {
 	    ship_y: 0,
     };
     let mut map = mapgenerator::get_generated_level(0); // 0 for ship
-
+    let mut entities = mapgenerator::get_generated_entities(0);
     let mut w = false;
     let mut a = false;
     let mut s = false;
@@ -243,6 +243,7 @@ fn main_loop() -> Result<(), String> {
 		game_state = "intruder";
 		println!("Intruder alert!");
 		map = mapgenerator::get_generated_level(0);
+		
 		player.x = 32.0;
 		player.y = 32.0;
 		

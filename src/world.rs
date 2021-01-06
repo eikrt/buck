@@ -1,4 +1,4 @@
-pub struct Player {
+pub struct Entity {
    pub x: f32,
    pub y: f32,
    pub speed: f32, 

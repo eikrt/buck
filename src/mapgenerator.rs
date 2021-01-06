@@ -2,6 +2,16 @@
 use toml::Value;
 
 use std::fs;
+pub fn get_generated_entities(level: u32) -> [crate::world::Entity] {
+    match level {
+	0 => {
+	    let mut entities = [];
+	}
+	1 => {
+	    
+	}
+    }
+}
 pub fn get_generated_level(level: u32) -> crate::world::Level {
     
     match level {
