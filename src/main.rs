@@ -74,8 +74,8 @@ fn main_loop() -> Result<(), String> {
 
     let mut player = world::Player {
 	
-	x: 400.0,
-	y: 300.0,
+	x: 32.0,
+	y: 32.0,
 	speed: 4.0,
 	speed_movement: 0.1,
 	speed_rotation:0.1,
@@ -88,8 +88,8 @@ fn main_loop() -> Result<(), String> {
 
     };
     let mut camera = world::Camera {
-	x: 0.0,
-	y: 0.0
+	x: -400.0,
+	y: -300.0
     };
     let mut game_state = "neutral"; // neutral, board, intruder
     let mut worldmap = world::WorldMap {
@@ -240,12 +240,18 @@ fn main_loop() -> Result<(), String> {
 		menu_on = false;
 	    }
 	    if line.trim() == "intruder" {
+		game_state = "intruder";
+		println!("Intruder alert!");
+		map = mapgenerator::get_generated_level(0);
+		player.x = 32.0;
+		player.y = 32.0;
 		
 	    }
 	    if line.trim() == "board" {
+		game_state = "board";
 		map = mapgenerator::get_generated_level(1); // 0 for ship
-		player.x = 400.0;
-		player.y = 300.0;
+		player.x = 32.0;
+		player.y = 32.0;
 	    }
 	    if line.trim() == "descend" {
 		let scenario = ui::draw_descend(&mut worldmap);
@@ -265,12 +271,12 @@ fn main_loop() -> Result<(), String> {
 		    // loot logic comes here
 		}
 		else if scenario.title.trim() == "board" {
-		    
+		    game_state = "board";
 		    println!("You prepare to board...");
 		    
 		    map = mapgenerator::get_generated_level(1); // 0 for ship
-		    player.x = 400.0;
-		    player.y = 300.0;
+		    player.x = 32.0;
+		    player.y = 32.0;
 		}
 		
 		else if scenario.title.trim() == "intruder" {
