@@ -21,7 +21,7 @@ const PLAYER_SPEED: f32 = 4.0;
 
 
 
-fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world::Level, camera: &mut world::Camera) {
+fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world::Level,entities: &Vec<world::Entity>, camera: &mut world::Camera) {
 
     // per render things
     let bg_color = Color::RGB(0, 0, 0);
@@ -56,7 +56,13 @@ fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world
     // render player
     canvas.set_draw_color(player_color);
     canvas.fill_rect(Rect::new(player.x as i32 - camera.x as i32, player.y as i32 - camera.y as i32, 16,16));	
-    canvas.present();
+    // render entities
+    for entity in entities {
+	
+	canvas.fill_rect(Rect::new(entity.x as i32 - camera.x as i32, entity.y as i32 - camera.y as i32, 16,16));	
+	
+    }
+	canvas.present();
 }
 
 
@@ -64,7 +70,7 @@ fn main_loop() -> Result<(), String> {
    //initialising windows and canvas 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-    let window = video_subsystem.window("Megaron", SCREEN_WIDTH, SCREEN_HEIGHT)
+    let window = video_subsystem.window("Elysium", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .build()
         .expect("could not initialize video subsystem");
@@ -298,11 +304,23 @@ fn main_loop() -> Result<(), String> {
 
     
 
+	// logic
 
+	
+	for mut entity in &mut entities {
+	    // entity comes to player
+
+	    let dist_to_player = ((player.x - entity.x).powf(2.0) + (player.y - entity.y).powf(2.0)).sqrt();
+	    let angle_to_player = (player.y - entity.y).atan2(player.x - entity.x);
+
+	    
+	    entity.x += angle_to_player.cos() * entity.speed_movement;
+	    entity.y += angle_to_player.sin() * entity.speed_movement;
+	    }
     
 	// render
 	
-        render(&mut canvas, &mut player, &mut map, &mut camera);
+        render(&mut canvas, &mut player, &mut map, &entities, &mut camera);
 
 	
 	// sleep

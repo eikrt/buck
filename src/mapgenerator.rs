@@ -2,13 +2,29 @@
 use toml::Value;
 
 use std::fs;
-pub fn get_generated_entities(level: u32) -> [crate::world::Entity] {
+pub fn get_generated_entities(level: u32) -> Vec<crate::world::Entity> {
     match level {
 	0 => {
-	    let mut entities = [];
+	    let entity = crate::world::Entity {
+		x:256.0,
+		y:256.0,
+		speed: 1.0,
+		speed_movement: 2.0,
+		speed_rotation: 0.1
+	    };
+	    let mut entities = Vec::with_capacity(1);
+	    entities.push(entity);
+	    return entities;
 	}
 	1 => {
 	    
+	    let mut entities = Vec::with_capacity(1);
+	    return entities;
+	}
+	_ => {
+
+	    let mut entities = Vec::with_capacity(1);
+	    return entities;
 	}
     }
 }
