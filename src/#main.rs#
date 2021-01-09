@@ -204,8 +204,9 @@ fn main_loop() -> Result<(), String> {
             .is_mouse_button_pressed(MouseButton::Left)
         {
            let mut state = event_pump.relative_mouse_state();
-            println!("Relative - X = {:?}, Y = {:?}", state.x(), state.y());
-        }
+           // println!("Relative - X = {:?}, Y = {:?}", state.x(), state.y());
+	    
+	}
 
 	if w == true {
 	    if map.content[((player.y - PLAYER_SPEED) / TILE_SIZE) as usize][((player.x) / TILE_SIZE) as usize] != 1 {
