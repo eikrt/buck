@@ -10,7 +10,8 @@ pub fn get_generated_entities(level: u32) -> Vec<crate::world::Entity> {
 		y:256.0,
 		speed: 1.0,
 		speed_movement: 2.0,
-		speed_rotation: 0.1
+		speed_rotation: 0.1,
+		attacking: false
 	    };
 	    let mut entities = Vec::with_capacity(1);
 	    entities.push(entity);

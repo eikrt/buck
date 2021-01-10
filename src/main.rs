@@ -23,7 +23,7 @@ const PLAYER_HITBOX_SIZE: f32 = 8.0;
 
 
 
-fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world::Level,entities: &Vec<world::Entity>, camera: &mut world::Camera) {
+fn render(canvas: &mut WindowCanvas, m_x: f32, m_y: f32, player: &mut world::Entity, map: &mut world::Level,entities: &Vec<world::Entity>, camera: &mut world::Camera) {
 
     // per render things
     let bg_color = Color::RGB(0, 0, 0);
@@ -57,7 +57,17 @@ fn render(canvas: &mut WindowCanvas, player: &mut world::Entity, map: &mut world
     }
     // render player
     canvas.set_draw_color(player_color);
-    canvas.fill_rect(Rect::new(player.x as i32 - camera.x as i32, player.y as i32 - camera.y as i32, 16,16));	
+    
+    canvas.fill_rect(Rect::new(player.x as i32 - camera.x as i32, player.y as i32 - camera.y as i32, 16,16));
+    // attack
+
+    if player.attacking {
+	let angle = (player.y - camera.y - m_y).atan2(player.x - camera.x - m_x);
+	let attack_x = angle.cos() * 16.0;
+	let attack_y = angle.sin() * 16.0;
+	canvas.fill_rect(Rect::new((player.x - camera.x - attack_x) as i32, (player.y - camera.y - attack_y) as i32, 16,16));
+	
+    }
     // render entities
     for entity in entities {
 	
@@ -79,7 +89,10 @@ fn main_loop() -> Result<(), String> {
     let mut canvas = window.into_canvas().build()
         .expect("could not make a canvas");
     //initialising gameplay things
-
+    let mut m_x = 0.0;
+    let mut m_y = 0.0;
+    let mut attack_time = 200.0;
+    let mut attack_change = 0.0;
     let mut player = world::Entity {
 	
 	x: 32.0,
@@ -87,6 +100,7 @@ fn main_loop() -> Result<(), String> {
 	speed: 4.0,
 	speed_movement: 0.1,
 	speed_rotation:0.1,
+	attacking:false
 
     };
     let mut drill = world::Drill {
@@ -203,9 +217,21 @@ fn main_loop() -> Result<(), String> {
             .mouse_state()
             .is_mouse_button_pressed(MouseButton::Left)
         {
-           let mut state = event_pump.relative_mouse_state();
-            println!("Relative - X = {:?}, Y = {:?}", state.x(), state.y());
-        }
+            let mut state = event_pump.mouse_state();
+	  //  if state.x() != 0 && state.y() != 0{
+	   // m_x = state.x() as f32;
+	    //		m_y = state.y() as f32;
+
+	    
+	    if !player.attacking {
+		
+		m_x = state.x() as f32;
+		m_y = state.y() as f32;
+		player.attacking = true;
+	    }
+           // println!("Relative - X = {:?}, Y = {:?}", state.x(), state.y());
+	    
+	}
 
 	if w == true {
 	    if map.content[((player.y - PLAYER_SPEED) / TILE_SIZE) as usize][((player.x) / TILE_SIZE) as usize] != 1 {
@@ -314,9 +340,6 @@ fn main_loop() -> Result<(), String> {
 	    }
 	}
    
-		//ui::draw_ui(game_state);
-
-    
 
 	// logic
 
@@ -330,18 +353,39 @@ fn main_loop() -> Result<(), String> {
 	    if dist_to_player < PLAYER_HITBOX_SIZE {
 	    }
 
+	    let angle = (entity.y - camera.y - m_y).atan2(entity.x - camera.x - m_x);
+	    let attack_x = player.x - angle.cos() * 16.0;
+	    let attack_y = player.y - angle.sin() * 16.0;
+	    
+	    let dist_from_attack = (entity.y - attack_y).powf(2.0) + (entity.y - attack_y).powf(2.0).sqrt();
+	    if dist_from_attack < 8.0 {
+	    }
 	    // movement 
 	    entity.x += angle_to_player.cos() * entity.speed_movement;
 	    entity.y += angle_to_player.sin() * entity.speed_movement;
+
+	    
 	    }
     
 	// render
 	
-        render(&mut canvas, &mut player, &mut map, &entities, &mut camera);
+        render(&mut canvas, m_x, m_y, &mut player, &mut map, &entities, &mut camera);
 
 	
+	
+	let duration = Duration::new(0, 1_000_000_000u32 / 60);
+
+	// counters
+	if player.attacking {
+	    attack_change += duration.as_millis() as f32;
+	}
+
+	if attack_change > attack_time {
+	    player.attacking = false;
+	    attack_change = 0.0;
+	}
 	// sleep
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+	::std::thread::sleep(duration);
     }
     Ok(())
 }

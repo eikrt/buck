@@ -3,7 +3,8 @@ pub struct Entity {
    pub y: f32,
    pub speed: f32, 
    pub speed_movement: f32,
-   pub speed_rotation: f32,
+    pub speed_rotation: f32,
+    pub attacking: bool,
 }
 pub struct Camera {
     pub x: f32,
