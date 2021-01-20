@@ -6,9 +6,13 @@ const empty_texts: &[&str] = &["You hear stones crumbling...", "The earth moves.
 const scenarios: &[&str] = &["wounded_man", "empty_cavern", "drill_wreck", "ancient_ruins", "ancient_remains"];
 
 
-pub fn draw_ui(state: &str) {
+pub fn draw_ui(state: &str, player: &crate::world::Entity) {
     //print!("{}[2J", 27 as char);
-    println!("HP: x x x");
+    println!("HP: ");
+    for h in 0..player.hp {
+	print!("x ", );
+    }
+    println!("");
     println!("Ammo: x x");
 }
 pub fn draw_descend(map: &mut crate::world::WorldMap) -> crate::world::Scenario{

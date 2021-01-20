@@ -23,7 +23,7 @@ const PLAYER_HITBOX_SIZE: f32 = 8.0;
 
 
 
-fn render(canvas: &mut WindowCanvas, m_x: f32, m_y: f32, player: &mut world::Entity, map: &mut world::Level,entities: &Vec<world::Entity>, camera: &mut world::Camera) {
+fn render(canvas: &mut WindowCanvas, m_x: f32, m_y: f32, attack_box: &mut world::AttackBox, player: &mut world::Entity, map: &mut world::Level,entities: &Vec<world::Entity>, camera: &mut world::Camera) {
 
     // per render things
     let bg_color = Color::RGB(0, 0, 0);
@@ -62,17 +62,14 @@ fn render(canvas: &mut WindowCanvas, m_x: f32, m_y: f32, player: &mut world::Ent
     // attack
 
     if player.attacking {
-	let angle = (player.y - camera.y - m_y).atan2(player.x - camera.x - m_x);
-	let attack_x = angle.cos() * 16.0;
-	let attack_y = angle.sin() * 16.0;
-	canvas.fill_rect(Rect::new((player.x - camera.x - attack_x) as i32, (player.y - camera.y - attack_y) as i32, 16,16));
+	canvas.fill_rect(Rect::new((player.x - camera.x - attack_box.x) as i32, (player.y - camera.y - attack_box.y) as i32, 16,16));
 	
     }
     // render entities
     for entity in entities {
-	
-	canvas.fill_rect(Rect::new(entity.x as i32 - camera.x as i32, entity.y as i32 - camera.y as i32, 16,16));	
-	
+	if entity.alive {
+	    canvas.fill_rect(Rect::new(entity.x as i32 - camera.x as i32, entity.y as i32 - camera.y as i32, 16,16));	
+	}
     }
 	canvas.present();
 }
@@ -91,16 +88,29 @@ fn main_loop() -> Result<(), String> {
     //initialising gameplay things
     let mut m_x = 0.0;
     let mut m_y = 0.0;
+    
+    let mut shoot_time = 200.0;
+    let mut shoot_change = 0.0;
     let mut attack_time = 200.0;
     let mut attack_change = 0.0;
+    let mut stage_completed = false;
     let mut player = world::Entity {
 	
-	x: 32.0,
-	y: 32.0,
+	x: 64.0,
+	y: 64.0,
 	speed: 4.0,
 	speed_movement: 0.1,
 	speed_rotation:0.1,
-	attacking:false
+	hp: 3,
+	ammo: 2,
+	attacking:false,
+	alive:true
+    };
+    let mut attack_box = world::AttackBox {
+	x: 32.0,
+	y: 32.0,
+	radius: 16.0,
+	angle: 0.0
 
     };
     let mut drill = world::Drill {
@@ -145,6 +155,8 @@ fn main_loop() -> Result<(), String> {
     let mut d = false;
     let mut menu_on = false;
     
+    let mut leftmouseclicked = false;
+    let mut rightmouseclicked = false;
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
 	// event handling
@@ -205,10 +217,6 @@ fn main_loop() -> Result<(), String> {
 		}
 
 		// Mouse
-		//Event::MouseButtonDown{mouse_btn: MouseButton::Left, ..} => {
-		 //   println!("{}", &event_pump.relative_mouse_state().x());
-	//	}
-		
 		
                 _ => {}
             }
@@ -217,20 +225,31 @@ fn main_loop() -> Result<(), String> {
             .mouse_state()
             .is_mouse_button_pressed(MouseButton::Left)
         {
-            let mut state = event_pump.mouse_state();
-	  //  if state.x() != 0 && state.y() != 0{
-	   // m_x = state.x() as f32;
-	    //		m_y = state.y() as f32;
-
 	    
-	    if !player.attacking {
+	    if !leftmouseclicked {
+		let mut state = event_pump.mouse_state();
 		
-		m_x = state.x() as f32;
-		m_y = state.y() as f32;
-		player.attacking = true;
+		if !player.attacking {
+		    m_x = state.x() as f32;
+		    m_y = state.y() as f32;
+		    player.attacking = true;
+		}
+		
+		leftmouseclicked = true;
 	    }
-           // println!("Relative - X = {:?}, Y = {:?}", state.x(), state.y());
-	    
+	}
+	else {
+	    leftmouseclicked = false;
+	}
+
+	    if !rightmouseclicked {
+		let mut state = event_pump.mouse_state();
+		
+		
+		rightmouseclicked = true;
+	    }
+	else {
+	    rightmouseclicked = false;
 	}
 
 	if w == true {
@@ -277,7 +296,7 @@ fn main_loop() -> Result<(), String> {
         
     // ui (command line ui is in its separate thread)
 	while menu_on == true {
-	    ui::draw_ui(game_state);
+	    ui::draw_ui(game_state, &player);
 	    
 	    let mut line = String::new();
 	    
@@ -289,41 +308,28 @@ fn main_loop() -> Result<(), String> {
 		game_state = "intruder";
 		println!("Intruder alert!");
 		map = mapgenerator::get_generated_level(0);
-		
-		player.x = 32.0;
-		player.y = 32.0;
+		player.reset();
 		
 	    }
 	    if line.trim() == "board" {
 		game_state = "board";
-		map = mapgenerator::get_generated_level(0); // 0 for ship
-		player.x = 32.0;
-		player.y = 32.0;
+		map = mapgenerator::get_generated_level(1); // 0 for ship
+		entities = mapgenerator::get_generated_entities(1);
+		player.reset();
 	    }
-	    if line.trim() == "descend" {
+	    if line.trim() == "drill" {
 		let scenario = ui::draw_descend(&mut worldmap);
 		if scenario.title.trim() == "loot" {
 		    let mut rng = rand::thread_rng();
-		    
-		    let silver = rng.gen_range(0..10);
-		    let ammo = rng.gen_range(0..4);
-		    let nitro = rng.gen_range(0..2);
-		    println!("You got {} amount of silver
-{} amount of ammo
-{} amount of nitro!", silver, ammo, nitro);
-		    
-		    drill.silver += silver;
-		    drill.ammo += ammo;
-		    drill.nitro += nitro;
-		    // loot logic comes here
+		    drill.find_loot();
 		}
 		else if scenario.title.trim() == "board" {
 		    game_state = "board";
 		    println!("You prepare to board...");
 		    
 		    map = mapgenerator::get_generated_level(1); // 0 for ship
-		    player.x = 32.0;
-		    player.y = 32.0;
+		    entities = mapgenerator::get_generated_entities(1);
+		    player.reset();
 		}
 		
 		else if scenario.title.trim() == "intruder" {
@@ -335,8 +341,6 @@ fn main_loop() -> Result<(), String> {
 		}
 	    }
 	    else {
-		
-		
 	    }
 	}
    
@@ -344,35 +348,50 @@ fn main_loop() -> Result<(), String> {
 	// logic
 
 	
+	if player.attacking {
+	    attack_box.angle = (player.y - camera.y - m_y).atan2(player.x - camera.x - m_x);
+	    attack_box.x = attack_box.angle.cos() * 16.0;
+	    attack_box.y = attack_box.angle.sin() * 16.0;
+	}
 	for mut entity in &mut entities {
 	    // entity logic, put in separate function!
-
+	    
 	    let dist_to_player = ((player.x - entity.x).powf(2.0) + (player.y - entity.y).powf(2.0)).sqrt();
 	    let angle_to_player = (player.y - entity.y).atan2(player.x - entity.x);
-
-	    if dist_to_player < PLAYER_HITBOX_SIZE {
-	    }
-
-	    let angle = (entity.y - camera.y - m_y).atan2(entity.x - camera.x - m_x);
-	    let attack_x = player.x - angle.cos() * 16.0;
-	    let attack_y = player.y - angle.sin() * 16.0;
 	    
-	    let dist_from_attack = (entity.y - attack_y).powf(2.0) + (entity.y - attack_y).powf(2.0).sqrt();
-	    if dist_from_attack < 8.0 {
+	    if dist_to_player < PLAYER_HITBOX_SIZE {
+		player.hp -= 1;
+		
+	    }
+	    if player.attacking {
+		
+		let dist_from_attack = ((entity.x - player.x+ attack_box.x).powf(2.0) + (entity.y -player.y+ attack_box.y).powf(2.0)).sqrt();
+		if dist_from_attack < attack_box.radius {
+		    entity.hp -= 1;
+		}
 	    }
 	    // movement 
 	    entity.x += angle_to_player.cos() * entity.speed_movement;
 	    entity.y += angle_to_player.sin() * entity.speed_movement;
-
 	    
+	    // death
+	    
+	    if entity.hp < 1 {
+		entity.alive = false;
+		stage_completed = true;
+		
 	    }
-    
-	// render
-	
-        render(&mut canvas, m_x, m_y, &mut player, &mut map, &entities, &mut camera);
+	}
+	if stage_completed {
 
-	
-	
+	    game_state = "neutral";
+	    map = mapgenerator::get_generated_level(0); // 0 for ship
+	    entities = mapgenerator::get_generated_entities(0);
+	    player.reset();
+	    stage_completed = false;
+	}
+	// render
+        render(&mut canvas, m_x, m_y, &mut attack_box, &mut player, &mut map, &entities, &mut camera);
 	let duration = Duration::new(0, 1_000_000_000u32 / 60);
 
 	// counters
